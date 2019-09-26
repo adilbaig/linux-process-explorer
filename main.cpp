@@ -20,14 +20,14 @@ struct ProcessBasicInfo
     vector<string> mountpoints;
 };
 
-std::string do_readlink(string &path)
+string do_readlink(string &path)
 {
     char buff[PATH_MAX];
     ssize_t len = ::readlink(path.c_str(), buff, sizeof(buff) - 1);
     if (len != -1)
     {
         buff[len] = '\0';
-        return std::string(buff);
+        return string(buff);
     }
 
     return "";
