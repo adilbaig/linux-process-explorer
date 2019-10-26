@@ -33,8 +33,10 @@ int main(int argc, char *argv[])
 
     auto exe = "/proc/" + pid_str + "/exe";
     auto cwd = "/proc/" + pid_str + "/cwd";
+    auto myroot = "/proc/" + pid_str + "/root";
     pbi.exe = do_readlink(exe);
     pbi.cwd = do_readlink(cwd);
+    pbi.root = do_readlink(myroot);
 
     fetch_visible_mountpoints(pbi, pid_str);
     fetch_open_fds(pbi, pid_str);
@@ -50,6 +52,7 @@ int main(int argc, char *argv[])
 
     cout << "CWD: " << pbi.cwd << endl;
     cout << "EXE: " << pbi.exe << endl;
+    cout << "Root (Containerized): " << pbi.root << endl;
 
     cout << "Visibile Mountpoints: " << endl;
     for (auto &arg : pbi.mountpoints)

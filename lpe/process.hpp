@@ -18,6 +18,7 @@ struct ProcessBasicInfo
     vector<string> args;
     string exe;
     string cwd;
+    string root;
 
     vector<string> mountpoints;
     vector<string> fds;
