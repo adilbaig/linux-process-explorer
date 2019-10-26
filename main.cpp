@@ -37,6 +37,8 @@ int main(int argc, char *argv[])
     pbi.cwd = do_readlink(cwd);
 
     fetch_visible_mountpoints(pbi, pid_str);
+    fetch_open_fds(pbi, pid_str);
+    fetch_environ(pbi, pid_str);
 
     cout << "Program: " << pbi.name << endl;
     cout << "Args: ";
@@ -57,7 +59,17 @@ int main(int argc, char *argv[])
     cout << endl;
 
     cout << "Open FDs: " << endl;
-    fetch_open_fds(pbi, pid_str);
+    for (auto &arg : pbi.fds)
+    {
+        cout << arg << endl;
+    }
+
+    cout << "Environment Variables: " << endl;
+    // https://stackoverflow.com/questions/26281979/c-loop-through-map
+    for (auto const &[key, val] : pbi.environment)
+    {
+        cout << key << " = " << val << endl;
+    }
 
     return 0;
 }

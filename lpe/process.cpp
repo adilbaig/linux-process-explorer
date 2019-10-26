@@ -56,11 +56,9 @@ void fetch_visible_mountpoints(ProcessBasicInfo &pbi, string &pid_str)
     {
         return;
     }
-    
-    int ctr, i, start, end;
+
     while (getline(myfile, line))
     {
-        // replace( line.begin(), line.end(), ' ', '\t');
         pbi.mountpoints.push_back(line + '\n');
     }
 
@@ -87,9 +85,37 @@ void fetch_open_fds(ProcessBasicInfo &pbi, string &pid_str)
             if (len != -1)
             {
                 buff[len] = '\0';
-                cout << buff << endl;
             }
         }
         closedir(dir);
     }
+}
+
+/**
+ * Fetch Environment variables
+ */
+void fetch_environ(ProcessBasicInfo &pbi, string &pid_str)
+{
+    string filename = "/proc/" + pid_str + "/environ";
+    ifstream myfile(filename);
+
+    if (!myfile.is_open())
+    {
+        return;
+    }
+
+    string line;
+    int end;
+    while (getline(myfile, line, '\0'))
+    {
+        end = line.find('=', 0);
+        if (end < 0)
+        {
+            continue;
+        }
+
+        pbi.environment.insert(pair<string, string>(line.substr(0, end), line.substr(end + 1)));
+    }
+
+    myfile.close();
 }
