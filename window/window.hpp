@@ -25,7 +25,7 @@ public:
   void set_env_variables(std::map<std::string, std::string>);
 };
 
-class StringVectorTable
+class FDTable
 {
 public:
   Gtk::ScrolledWindow m_ScrolledWindow;
@@ -33,14 +33,14 @@ public:
 
 protected:
   int col_ctr = 0;
-  Gtk::TreeModelColumn<unsigned int> m_col_id;
-  Gtk::TreeModelColumn<Glib::ustring> m_col_str;
+  Gtk::TreeModelColumn<unsigned int> m_col_fd;
+  Gtk::TreeModelColumn<Glib::ustring> m_col_path;
 
   Gtk::TreeView m_TreeView;
   Gtk::TreeModel::ColumnRecord m_Columns;
 
 public:
-  StringVectorTable(std::string);
+  FDTable();
   void set_vector(std::vector<std::string>);
 };
 
@@ -70,7 +70,7 @@ class MainWindow : public Gtk::Window
 {
 public:
   EnvTable env_table;
-  StringVectorTable fd_table;
+  FDTable fd_table;
   MountPointTable mountpoint_table;
 
   MainWindow(std::string);

@@ -1,9 +1,7 @@
 #include <iostream>
 #include "window.hpp"
 
-MainWindow::MainWindow(std::string title)
-    : m_VBox(Gtk::ORIENTATION_VERTICAL),
-      fd_table("File Descriptor")
+MainWindow::MainWindow(std::string title) : m_VBox(Gtk::ORIENTATION_VERTICAL)
 {
   set_title("Linux Process Explorer: " + title);
   set_border_width(5);
@@ -62,11 +60,15 @@ void MainWindow::set_cwd(std::string var)
 void MainWindow::set_args(std::vector<std::string> var)
 {
   std::string s;
-  if(var.size()){
-    for(auto const& a: var) {
+  if (var.size())
+  {
+    for (auto const &a : var)
+    {
       s += a + ' ';
     }
-  } else {
+  }
+  else
+  {
     s = "-";
   }
 
@@ -111,37 +113,37 @@ void EnvTable::set_env_variables(std::map<std::string, std::string> vars)
   }
 }
 
-StringVectorTable::StringVectorTable(std::string column_name)
+FDTable::FDTable()
 {
   m_ScrolledWindow.add(m_TreeView);
   m_ScrolledWindow.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 
   // Add columns to column group
-  m_Columns.add(m_col_id);
-  m_Columns.add(m_col_str);
+  m_Columns.add(m_col_fd);
+  m_Columns.add(m_col_path);
 
   //Create the Tree model:
   m_refTreeModel = Gtk::ListStore::create(m_Columns);
   m_TreeView.set_model(m_refTreeModel);
 
   //Add the TreeView's view columns:
-  m_TreeView.append_column("#", m_col_id);
-  m_TreeView.append_column(column_name, m_col_str);
+  m_TreeView.append_column("FD", m_col_fd);
+  m_TreeView.append_column("Path", m_col_path);
 
   //Make the columns sortable
   int s = 0;
-  m_TreeView.get_column(s++)->set_sort_column(m_col_id);
-  m_TreeView.get_column(s++)->set_sort_column(m_col_str);
+  m_TreeView.get_column(s++)->set_sort_column(m_col_fd);
+  m_TreeView.get_column(s++)->set_sort_column(m_col_path);
 }
 
-void StringVectorTable::set_vector(std::vector<std::string> vars)
+void FDTable::set_vector(std::vector<std::string> vars)
 {
   Gtk::TreeModel::Row row;
   for (auto const &val : vars)
   {
     row = *(m_refTreeModel->append());
-    row[m_col_id] = ++col_ctr;
-    row[m_col_str] = val;
+    row[m_col_fd] = col_ctr++;
+    row[m_col_path] = val;
   }
 }
 

@@ -85,6 +85,8 @@ void fetch_open_fds(ProcessBasicInfo &pbi, string &pid_str)
             if (len != -1)
             {
                 buff[len] = '\0';
+                std::string s = buff;
+                pbi.fds.push_back(s);
             }
         }
         closedir(dir);
