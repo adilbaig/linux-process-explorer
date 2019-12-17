@@ -4,6 +4,7 @@
 #include <gtkmm.h>
 #include <map>
 #include <string>
+#include "../lpe/process.hpp"
 
 class EnvTable
 {
@@ -66,12 +67,34 @@ public:
   void set_mount_points(std::vector<std::string>);
 };
 
+class LimitsTable
+{
+public:
+  Gtk::ScrolledWindow m_ScrolledWindow;
+  Glib::RefPtr<Gtk::ListStore> m_refTreeModel;
+
+protected:
+  int col_ctr = 0;
+  Gtk::TreeModelColumn<Glib::ustring> m_col_limit;
+  Gtk::TreeModelColumn<Glib::ustring> m_col_hard;
+  Gtk::TreeModelColumn<Glib::ustring> m_col_soft;
+  Gtk::TreeModelColumn<Glib::ustring> m_col_unit;
+
+  Gtk::TreeView m_TreeView;
+  Gtk::TreeModel::ColumnRecord m_Columns;
+
+public:
+  LimitsTable();
+  void set_limits(std::vector<Limit>);
+};
+
 class MainWindow : public Gtk::Window
 {
 public:
   EnvTable env_table;
   FDTable fd_table;
   MountPointTable mountpoint_table;
+  LimitsTable lm_table;
 
   MainWindow(std::string);
   virtual ~MainWindow();
@@ -79,7 +102,7 @@ public:
   void set_args(std::vector<std::string>);
   void set_cwd(std::string);
   void set_root(std::string);
-  
+
 protected:
   Gtk::Box m_VBox;
   Gtk::Notebook m_Notebook;

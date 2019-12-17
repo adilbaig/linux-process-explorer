@@ -14,6 +14,7 @@ MainWindow::MainWindow(std::string title) : m_VBox(Gtk::ORIENTATION_VERTICAL)
   m_Notebook.append_page(env_table.m_ScrolledWindow, "Environment");
   m_Notebook.append_page(mountpoint_table.m_ScrolledWindow, "Visible MountPoints");
   m_Notebook.append_page(fd_table.m_ScrolledWindow, "File Descriptors");
+  m_Notebook.append_page(lm_table.m_ScrolledWindow, "Limits");
 
   //Set some defaults so the alignment can kick in.
   l_exe.set_text("Exe:");
@@ -199,5 +200,46 @@ void MountPointTable::set_mount_points(std::vector<std::string> vars)
     row[m_col_path] = toks[1];
     row[m_col_fs] = toks[2];
     row[m_col_options] = toks[3];
+  }
+}
+
+LimitsTable::LimitsTable()
+{
+  m_ScrolledWindow.add(m_TreeView);
+  m_ScrolledWindow.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+
+  // Add columsn to column group
+  m_Columns.add(m_col_limit);
+  m_Columns.add(m_col_hard);
+  m_Columns.add(m_col_soft);
+  m_Columns.add(m_col_unit);
+
+  //Create the Tree model:
+  m_refTreeModel = Gtk::ListStore::create(m_Columns);
+  m_TreeView.set_model(m_refTreeModel);
+
+  //Add the TreeView's view columns:
+  m_TreeView.append_column("Limit", m_col_limit);
+  m_TreeView.append_column("Soft Limit", m_col_soft);
+  m_TreeView.append_column("Hard Limit", m_col_hard);
+  m_TreeView.append_column("Unit", m_col_unit);
+
+  //Make the columns sortable
+  int s = 0;
+  m_TreeView.get_column(s++)->set_sort_column(m_col_limit);
+  m_TreeView.get_column(s++)->set_sort_column(m_col_hard);
+  m_TreeView.get_column(s++)->set_sort_column(m_col_soft);
+}
+
+void LimitsTable::set_limits(std::vector<Limit> limits)
+{
+  Gtk::TreeModel::Row row;
+  for (auto const &limit : limits)
+  {
+    row = *(m_refTreeModel->append());
+    row[m_col_limit] = limit.limit;
+    row[m_col_hard] = (limit.rlim.rlim_max == RLIM_INFINITY) ? "unlimited" : to_string(limit.rlim.rlim_max);
+    row[m_col_soft] = (limit.rlim.rlim_cur == RLIM_INFINITY) ? "unlimited" : to_string(limit.rlim.rlim_cur);
+    row[m_col_unit] = limit.unit;
   }
 }

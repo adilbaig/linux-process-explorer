@@ -85,7 +85,7 @@ void fetch_open_fds(ProcessBasicInfo &pbi, string &pid_str)
             if (len != -1)
             {
                 buff[len] = '\0';
-                std::string s = buff;
+                string s = buff;
                 pbi.fds.push_back(s);
             }
         }
@@ -120,4 +120,95 @@ void fetch_environ(ProcessBasicInfo &pbi, string &pid_str)
     }
 
     myfile.close();
+}
+
+void fetch_stats(ProcessBasicInfo &pbi, string &pid_str)
+{
+    string filename = "/proc/" + pid_str + "/stats";
+    ifstream myfile(filename);
+
+    if (!myfile.is_open())
+    {
+        return;
+    }
+
+    string line;
+    while (getline(myfile, line))
+    {
+        // Process the line into multiple structs
+    }
+
+    myfile.close();
+}
+
+void fetch_limits(ProcessBasicInfo &pbi, string &pid_str)
+{
+    pid_t pid = stoi(pid_str);
+
+    for (uint i = 0; i < RLIM_NLIMITS; i++)
+    {
+        struct rlimit curr_limit;
+        auto r = prlimit(pid, (__rlimit_resource)i, nullptr, &curr_limit);
+
+        struct Limit limit;
+
+        switch (i)
+        {
+        case RLIMIT_CPU:
+            limit.limit = "Max CPU time";
+            limit.unit = "secs";
+            break;
+        case RLIMIT_FSIZE:
+            limit.limit = "Largest file that can be created";
+            limit.unit = "bytes";
+            break;
+        case RLIMIT_DATA:
+            limit = {"Max size of data segment", 0, 0, "bytes"};
+            break;
+        case RLIMIT_STACK:
+            limit = {"Max size of stack segment", 0, 0, "bytes"};
+            break;
+        case RLIMIT_CORE:
+            limit = {"Max core file size", 0, 0, "bytes"};
+            break;
+        case RLIMIT_RSS:
+            limit = {"Max resident set size", 0, 0, "bytes"};
+            break;
+        case RLIMIT_NOFILE:
+            limit = {"Max number of open files", 0, 0, "files"};
+            break;
+        case RLIMIT_AS:
+            limit = {"Max address space", 0, 0, "bytes"};
+            break;
+        case RLIMIT_NPROC:
+            limit = {"Max number of processes", 0, 0, "processes"};
+            break;
+        case RLIMIT_MEMLOCK:
+            limit = {"Locked-in-memory address space", 0, 0, ""};
+            break;
+        case RLIMIT_LOCKS:
+            limit = {"Max file locks", 0, 0, "locks"};
+            break;
+        case RLIMIT_SIGPENDING:
+            limit = {"Max number of pending signals", 0, 0, "signals"};
+            break;
+        case RLIMIT_MSGQUEUE:
+            limit = {"Max bytes in POSIX message queues", 0, 0, "bytes"};
+            break;
+        case RLIMIT_NICE:
+            limit = {"Max nice priority allowed", 0, 0, ""};
+            break;
+        case RLIMIT_RTPRIO:
+            limit = {"Max realtime priority allowed", 0, 0, ""};
+            break;
+        case RLIMIT_RTTIME:
+            limit = {"Max realtime timeout", 0, 0, "us"};
+            break;
+        default:
+            break;
+        }
+
+        limit.rlim = curr_limit;
+        pbi.limits.push_back(limit);
+    }
 }
