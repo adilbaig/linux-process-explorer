@@ -1,4 +1,3 @@
-#include <iostream>
 #include "window.hpp"
 
 MainWindow::MainWindow(std::string title) : m_VBox(Gtk::ORIENTATION_VERTICAL)
@@ -15,6 +14,7 @@ MainWindow::MainWindow(std::string title) : m_VBox(Gtk::ORIENTATION_VERTICAL)
   m_Notebook.append_page(mountpoint_table.m_ScrolledWindow, "Visible MountPoints");
   m_Notebook.append_page(fd_table.m_ScrolledWindow, "File Descriptors");
   m_Notebook.append_page(lm_table.m_ScrolledWindow, "Limits");
+  m_Notebook.append_page(tm_table.m_ScrolledWindow, "Timers");
 
   //Set some defaults so the alignment can kick in.
   l_exe.set_text("Exe:");
@@ -153,7 +153,7 @@ MountPointTable::MountPointTable()
   m_ScrolledWindow.add(m_TreeView);
   m_ScrolledWindow.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 
-  // Add columsn to column group
+  // Add columns to column group
   m_Columns.add(m_col_id);
   m_Columns.add(m_col_name);
   m_Columns.add(m_col_path);
@@ -241,5 +241,40 @@ void LimitsTable::set_limits(std::vector<Limit> limits)
     row[m_col_hard] = (limit.rlim.rlim_max == RLIM_INFINITY) ? "unlimited" : to_string(limit.rlim.rlim_max);
     row[m_col_soft] = (limit.rlim.rlim_cur == RLIM_INFINITY) ? "unlimited" : to_string(limit.rlim.rlim_cur);
     row[m_col_unit] = limit.unit;
+  }
+}
+
+
+TimerTable::TimerTable()
+{
+  m_ScrolledWindow.add(m_TreeView);
+  m_ScrolledWindow.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+
+  m_Columns.add(m_col_signal);
+  m_Columns.add(m_col_notice);
+  m_Columns.add(m_col_method);
+  m_Columns.add(m_col_clock);
+
+  //Create the Tree model:
+  m_refTreeModel = Gtk::ListStore::create(m_Columns);
+  m_TreeView.set_model(m_refTreeModel);
+
+  //Add the TreeView's view columns:
+  m_TreeView.append_column("Signal", m_col_signal);
+  m_TreeView.append_column("Notification", m_col_notice);
+  m_TreeView.append_column("Notification Method", m_col_method);
+  m_TreeView.append_column("Clock", m_col_clock);
+}
+
+void TimerTable::set_timers(std::vector<TimerSignal> timers)
+{
+  Gtk::TreeModel::Row row;
+  for (auto const &timer : timers)
+  {
+    row = *(m_refTreeModel->append());
+    row[m_col_signal] = timer.signal;
+    row[m_col_notice] = timer.notification;
+    row[m_col_method] = timer.method;
+    row[m_col_clock] = timer.clock;
   }
 }

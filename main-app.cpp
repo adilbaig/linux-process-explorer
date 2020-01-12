@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
   if (getpgid(pid) < 0)
   {
     cerr << "PID is not valid" << '\n';
+    return -1;
   }
 
   ProcessBasicInfo pbi = {};
@@ -35,6 +36,7 @@ int main(int argc, char *argv[])
   fetch_environ(pbi, pid_str);
   fetch_open_fds(pbi, pid_str);
   fetch_limits(pbi, pid_str);
+  fetch_timers(pbi, pid_str);
 
   int c = 0;
   auto app = Gtk::Application::create(c, argv, "org.gtkmm.example");
@@ -44,6 +46,7 @@ int main(int argc, char *argv[])
   window.mountpoint_table.set_mount_points(pbi.mountpoints);
   window.fd_table.set_vector(pbi.fds);
   window.lm_table.set_limits(pbi.limits);
+  window.tm_table.set_timers(pbi.timers);
   window.set_exe(pbi.exe);
   window.set_args(pbi.args);
   window.set_cwd(pbi.cwd);

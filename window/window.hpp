@@ -4,6 +4,7 @@
 #include <gtkmm.h>
 #include <map>
 #include <string>
+#include <iostream>
 #include "../lpe/process.hpp"
 
 class EnvTable
@@ -88,6 +89,27 @@ public:
   void set_limits(std::vector<Limit>);
 };
 
+class TimerTable
+{
+public:
+  Gtk::ScrolledWindow m_ScrolledWindow;
+  Glib::RefPtr<Gtk::ListStore> m_refTreeModel;
+
+protected:
+  int col_ctr = 0;
+  Gtk::TreeModelColumn<Glib::ustring> m_col_signal;
+  Gtk::TreeModelColumn<Glib::ustring> m_col_notice;
+  Gtk::TreeModelColumn<Glib::ustring> m_col_method;
+  Gtk::TreeModelColumn<Glib::ustring> m_col_clock;
+
+  Gtk::TreeView m_TreeView;
+  Gtk::TreeModel::ColumnRecord m_Columns;
+
+public:
+  TimerTable();
+  void set_timers(std::vector<TimerSignal>);
+};
+
 class MainWindow : public Gtk::Window
 {
 public:
@@ -95,6 +117,7 @@ public:
   FDTable fd_table;
   MountPointTable mountpoint_table;
   LimitsTable lm_table;
+  TimerTable tm_table;
 
   MainWindow(std::string);
   virtual ~MainWindow();

@@ -212,3 +212,90 @@ void fetch_limits(ProcessBasicInfo &pbi, string &pid_str)
         pbi.limits.push_back(limit);
     }
 }
+
+void fetch_timers(ProcessBasicInfo &pbi, string &pid_str)
+{
+    // @see:  http://man7.org/linux/man-pages/man5/proc.5.html. Find '/proc/[pid]/timers'
+
+    ifstream myfile("/proc/" + pid_str + "/timers");
+    // ifstream myfile("/home/adil/workspace/linux-process-explorer/timers");
+    if (!myfile.is_open())
+    {
+        return;
+    }
+
+    string line;
+    while (getline(myfile, line))
+    {
+        // Ignore reading the first line. It is the timer Id
+        string signal, notice, method, clockid;
+        size_t start, slash, dot;
+
+        // Get the signal number
+        getline(myfile, line);
+        start = line.find(' ') + 1;
+        slash = line.find('/');
+        signal = line.substr(start, slash - start);
+
+        // Get the nofication method
+        getline(myfile, line);
+        start = line.find(' ') + 1;
+        slash = line.find('/');
+        dot = line.find('.');
+        notice = line.substr(start, slash - start);
+        method = line.substr(slash + 1, slash - dot);
+
+        // Get the clock id
+        getline(myfile, line);
+        start = line.find(' ') + 1;
+        clockid = line.substr(start, line.length());
+
+        TimerSignal t;
+        t.signal = "(" + signal + ") " + strsignal(atoi(signal.c_str()));
+        t.notification = notice;
+        t.method = method;
+
+        switch (atoi(clockid.c_str()))
+        {
+        case CLOCK_BOOTTIME:
+            t.clock = "CLOCK_BOOTTIME";
+            break;
+        case CLOCK_BOOTTIME_ALARM:
+            t.clock = "CLOCK_BOOTTIME_ALARM";
+            break;
+        case CLOCK_MONOTONIC:
+            t.clock = "CLOCK_MONOTONIC";
+            break;
+        case CLOCK_MONOTONIC_COARSE:
+            t.clock = "CLOCK_MONOTONIC_COARSE";
+            break;
+        case CLOCK_MONOTONIC_RAW:
+            t.clock = "CLOCK_MONOTONIC_RAW";
+            break;
+        case CLOCK_PROCESS_CPUTIME_ID:
+            t.clock = "CLOCK_PROCESS_CPUTIME_ID";
+            break;
+        case CLOCK_REALTIME:
+            t.clock = "CLOCK_REALTIME";
+            break;
+        case CLOCK_REALTIME_ALARM:
+            t.clock = "CLOCK_REALTIME_ALARM";
+            break;
+        case CLOCK_REALTIME_COARSE:
+            t.clock = "CLOCK_REALTIME_COARSE";
+            break;
+        case CLOCK_TAI:
+            t.clock = "CLOCK_TAI";
+            break;
+        case CLOCK_THREAD_CPUTIME_ID:
+            t.clock = "CLOCK_THREAD_CPUTIME_ID";
+            break;
+        default:
+            break;
+        }
+
+        pbi.timers.push_back(t);
+    }
+
+    myfile.close();
+}
