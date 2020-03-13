@@ -46,6 +46,47 @@ struct ProcessBasicInfo
 
     vector<Limit> limits;
     vector<TimerSignal> timers;
+
+    ssize_t umask;
+    char state;
+    int tgid, ngid, pid, ppid, tracer_pid;
+
+    int real_uid, effective_uid, saved_set_uid, filesystem_uid;
+    int real_gid, effective_gid, saved_set_gid, filesystem_gid;
+    int fdsize;
+    
+    vector<string> groups;
+    vector<int> group_ids;
+    vector<int> NStgid, NSpid, NSpgid, NSsid;
+
+    // Memory
+    size_t VmPeak, VmSize, VmLck, VmPin, VmHWM, VmRSS;
+    size_t RssAnon, RssFile, RssShmem;
+    size_t VmData, VmStk, VmExe, VmLib, VmPTE, VmPMD;
+    size_t VmSwap;
+    size_t HugeTLBPages;
+    bool isCoreDumping;
+    size_t threads;
+
+    // Signals
+    ssize_t queued_signals, signals_limit;
+    ssize_t SigPnd, ShdPnd;
+    ssize_t SigBlk, SigIgn, SigCgt;
+
+    // Capabilities
+    ssize_t CapInh, CapPrm, CapEff;
+    ssize_t CapBnd;
+    ssize_t CapAmb;
+    bool NoNewPrivs;
+    int Seccomp;
+    bool Speculation_Store_Bypass;
+
+    // CPU Sets
+    vector<int> Cpus_allowed;
+    vector<int> Mems_allowed;
+
+    // Other Stats
+    int voluntary_ctxt_switches, nonvoluntary_ctxt_switches;
 };
 
 string do_readlink(string &path);
@@ -63,3 +104,5 @@ void fetch_stats(ProcessBasicInfo &pbi, string &pid_str);
 void fetch_limits(ProcessBasicInfo &pbi, string &pid_str);
 
 void fetch_timers(ProcessBasicInfo &pbi, string &pid_str);
+
+void fetch_status(ProcessBasicInfo &pbi, string &pid_str);

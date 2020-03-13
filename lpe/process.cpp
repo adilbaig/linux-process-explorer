@@ -122,9 +122,9 @@ void fetch_environ(ProcessBasicInfo &pbi, string &pid_str)
     myfile.close();
 }
 
-void fetch_stats(ProcessBasicInfo &pbi, string &pid_str)
+void fetch_status(ProcessBasicInfo &pbi, string &pid_str)
 {
-    string filename = "/proc/" + pid_str + "/stats";
+    string filename = "/proc/" + pid_str + "/status";
     ifstream myfile(filename);
 
     if (!myfile.is_open())
@@ -132,13 +132,93 @@ void fetch_stats(ProcessBasicInfo &pbi, string &pid_str)
         return;
     }
 
-    string line;
-    while (getline(myfile, line))
+    string tmp;
+    vector<string> args;
+    while (getline(myfile, tmp))
+        args.push_back(tmp.substr(tmp.find('\t') + 1));
+
+    // Process IDs
+    pbi.state = args[2][0];
+    pbi.tgid = stoi(args[3]);
+    pbi.ngid = stoi(args[4]);
+    pbi.pid = stoi(args[5]);
+    pbi.ppid = stoi(args[6]);
+    pbi.tracer_pid = stoi(args[7]);
+
+    auto pushToVec = [&tmp](string str, vector<int> &container) {
+        stringstream X(str);
+        while (getline(X, tmp, '\t'))
+        {
+            container.push_back(stoi(tmp));
+        }
+    };
+
+    pushToVec(args[12], pbi.NStgid);
+    pushToVec(args[13], pbi.NSpid);
+    pushToVec(args[14], pbi.NSpgid);
+    pushToVec(args[15], pbi.NSsid);
+
+    // User IDs, Group IDs
+    vector<int> uids;
+    pushToVec(args[8], uids);
+    pbi.real_uid = uids[0];
+    pbi.effective_uid = uids[1];
+    pbi.saved_set_uid = uids[2];
+    pbi.filesystem_uid = uids[3];
+
+    vector<int> gids;
+    pushToVec(args[9], gids);
+    pbi.real_gid = gids[0];
+    pbi.effective_gid = gids[1];
+    pbi.saved_set_gid = gids[2];
+    pbi.filesystem_gid = gids[3];
+
+    // FD Size
+    pbi.fdsize = stoi(args[10]);
+
+    // Groups
+    stringstream X(args[11]);
+    while (getline(X, tmp, ' '))
     {
-        // Process the line into multiple structs
+        pbi.group_ids.push_back(stoi(tmp));
     }
 
-    myfile.close();
+    auto toBytes = [&](string size) {
+        auto pos = size.find_last_of(' ');
+        auto unit = size.substr(pos+1);
+
+        auto rez = stoul(size);
+        size_t mul = 1;
+        if(unit == "kB")
+            mul = 1024;
+        else if(unit == "mB")
+            mul = 1024 * 1024;
+        else if(unit == "gB")
+            mul = 1024 * 1024 * 1024;
+        
+        return rez * mul;
+    };
+
+    // Memory
+    pbi.VmPeak = toBytes(args[16]);
+    pbi.VmSize = toBytes(args[17]);
+    pbi.VmLck = toBytes(args[18]);
+    pbi.VmPin = toBytes(args[19]);
+    pbi.VmHWM = toBytes(args[20]);
+    pbi.VmRSS = toBytes(args[21]);
+    pbi.RssAnon = toBytes(args[22]);
+    pbi.RssFile = toBytes(args[23]);
+    pbi.RssShmem = toBytes(args[24]);
+    pbi.VmData = toBytes(args[25]);
+    pbi.VmStk = toBytes(args[26]);
+    pbi.VmExe = toBytes(args[27]);
+    pbi.VmLib = toBytes(args[28]);
+    pbi.VmPTE = toBytes(args[29]);
+    pbi.VmSwap = toBytes(args[30]);
+    pbi.HugeTLBPages = toBytes(args[31]);
+
+    pbi.isCoreDumping = bool(stoi(args[32]));
+    pbi.threads = stoul(args[33]);
 }
 
 void fetch_limits(ProcessBasicInfo &pbi, string &pid_str)
@@ -218,7 +298,6 @@ void fetch_timers(ProcessBasicInfo &pbi, string &pid_str)
     // @see:  http://man7.org/linux/man-pages/man5/proc.5.html. Find '/proc/[pid]/timers'
 
     ifstream myfile("/proc/" + pid_str + "/timers");
-    // ifstream myfile("/home/adil/workspace/linux-process-explorer/timers");
     if (!myfile.is_open())
     {
         return;

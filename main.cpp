@@ -6,6 +6,14 @@
 
 using namespace std;
 
+string vIntToStr(vector<int> vi)
+{
+    stringstream joinedValues;
+    for (const auto &v : vi)
+        joinedValues << v << ",";
+    return joinedValues.str().substr(0, joinedValues.str().size() - 1);
+}
+
 int main(int argc, char *argv[])
 {
     if (argc < 2)
@@ -41,6 +49,7 @@ int main(int argc, char *argv[])
     fetch_visible_mountpoints(pbi, pid_str);
     fetch_open_fds(pbi, pid_str);
     fetch_environ(pbi, pid_str);
+    fetch_status(pbi, pid_str);
 
     cout << "Program: " << pbi.name << endl;
     cout << "Args: ";
@@ -74,5 +83,36 @@ int main(int argc, char *argv[])
         cout << key << " = " << val << endl;
     }
 
+    cout << "Process IDs " << endl
+         << "================" << endl;
+    cout << "State: " << pbi.state << endl;
+    cout << "PID: " << pbi.pid << endl;
+    cout << "Parent PID: " << pbi.ppid << endl;
+    cout << "Thread Group ID: " << pbi.tgid << endl;
+    cout << "Numa Group ID: " << pbi.ngid << endl;
+    cout << "Tracer PID: " << pbi.tracer_pid << endl;
+
+    cout << "NameSpace Thread Group ID: " << vIntToStr(pbi.NStgid) << endl;
+    cout << "NameSpace PID: " << vIntToStr(pbi.NSpid) << endl;
+    cout << "NameSpace Parent Group ID: " << vIntToStr(pbi.NSpgid) << endl;
+    cout << "NameSpace Session ID: " << vIntToStr(pbi.NSsid) << endl;
+
+    printf("Real, effective, saved set, and filesystem UIDs: %d, %d, %d, %d\n", pbi.real_uid , pbi.effective_uid , pbi.saved_set_uid , pbi.filesystem_uid);
+    printf("Real, effective, saved set, and filesystem GIDs: %d, %d, %d, %d\n", pbi.real_gid , pbi.effective_gid , pbi.saved_set_gid , pbi.filesystem_gid);
+
+    cout << "FDSize: " << pbi.fdsize << endl;
+
+    cout << "Groups: " << vIntToStr(pbi.group_ids) << endl;
+
+    printf("VM Peak, Current, Locked, Pinned: %lu, %lu, %lu, %lu kb\n", pbi.VmPeak/1024, pbi.VmSize/1024, pbi.VmLck/1024, pbi.VmPin/1024);
+    printf("RSS Peak, Current, Anon, File, Shmem: %lu, %lu, %lu, %lu, %lu kb\n", pbi.VmHWM/1024, pbi.VmRSS/1024, pbi.RssAnon/1024, pbi.RssFile/1024, pbi.RssShmem/1024);
+    printf("Memory Segments Data, Stack, Text, Shared Libs : %lu, %lu, %lu, %lu kb\n", pbi.VmData/1024, pbi.VmStk/1024, pbi.VmExe/1024, pbi.VmLib/1024);
+    printf("Memory Page Table Entries Size : %lu kb\n", pbi.VmPTE/1024);
+    printf("Swapped Out VM Size : %lu kb\n", pbi.VmSwap/1024);
+    printf("HugeTLB Size : %lu kb\n", pbi.HugeTLBPages/1024);
+
+    cout << "Core Dumping? " << pbi.isCoreDumping << endl;
+    cout << "Active Threads: " << pbi.threads << endl;
     return 0;
 }
+
