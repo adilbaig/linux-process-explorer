@@ -217,8 +217,18 @@ void fetch_status(ProcessBasicInfo &pbi, string &pid_str)
     pbi.VmSwap = toBytes(args[30]);
     pbi.HugeTLBPages = toBytes(args[31]);
 
+    // Misc.
     pbi.isCoreDumping = bool(stoi(args[32]));
     pbi.threads = stoul(args[33]);
+
+    //Signals
+    auto p = args[34].find('/');
+    pbi.queued_signals = stoul(args[34].substr(0, p));
+    pbi.signals_limit = stoul(args[34].substr(p+1));
+
+    pbi.SigPnd = stoi(args[35], 0, 16);
+    pbi.ShdPnd = stoi(args[36], 0, 16);
+    pbi.SigBlk = stoi(args[37], 0, 16);
 }
 
 void fetch_limits(ProcessBasicInfo &pbi, string &pid_str)

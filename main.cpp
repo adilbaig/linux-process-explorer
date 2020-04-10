@@ -113,6 +113,10 @@ int main(int argc, char *argv[])
 
     cout << "Core Dumping? " << pbi.isCoreDumping << endl;
     cout << "Active Threads: " << pbi.threads << endl;
+
+    cout << "Signals Queued: " << pbi.queued_signals << '/' << pbi.signals_limit << endl;
+    cout << "Signals Pending Thread, Process: " << pbi.SigPnd << ',' << pbi.ShdPnd << endl;
+    cout << "Signals Blocked: " << pbi.SigBlk << endl;
     return 0;
 }
 

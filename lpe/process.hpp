@@ -69,9 +69,9 @@ struct ProcessBasicInfo
     size_t threads;
 
     // Signals
-    ssize_t queued_signals, signals_limit;
-    ssize_t SigPnd, ShdPnd;
-    ssize_t SigBlk, SigIgn, SigCgt;
+    uint queued_signals, signals_limit;
+    uint SigPnd, ShdPnd;
+    uint SigBlk, SigIgn, SigCgt;
 
     // Capabilities
     ssize_t CapInh, CapPrm, CapEff;
