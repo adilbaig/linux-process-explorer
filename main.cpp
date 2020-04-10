@@ -14,6 +14,80 @@ string vIntToStr(vector<int> vi)
     return joinedValues.str().substr(0, joinedValues.str().size() - 1);
 }
 
+void print_signalsv(vector<int> signals)
+{
+    const vector<string> sig_str = {
+        "SIGHUP",
+        "SIGINT",
+        "SIGQUIT",
+        "SIGILL",
+        "SIGTRAP",
+        "SIGABRT",
+        "SIGBUS",
+        "SIGFPE",
+        "SIGKILL",
+        "SIGUSR1",
+        "SIGSEGV",
+        "SIGUSR2",
+        "SIGPIPE",
+        "SIGALRM",
+        "SIGTERM",
+        "SIGSTKFLT",
+        "SIGCHLD",
+        "SIGCONT",
+        "SIGSTOP",
+        "SIGTSTP",
+        "SIGTTIN",
+        "SIGTTOU",
+        "SIGURG",
+        "SIGXCPU",
+        "SIGXFSZ",
+        "SIGVTALRM",
+        "SIGPROF",
+        "SIGWINCH",
+        "SIGIO",
+        "SIGPWR",
+        "SIGSYS",
+        "SIGRTMIN",
+        "SIGRTMIN+1",
+        "SIGRTMIN+2",
+        "SIGRTMIN+3",
+        "SIGRTMIN+4",
+        "SIGRTMIN+5",
+        "SIGRTMIN+6",
+        "SIGRTMIN+7",
+        "SIGRTMIN+8",
+        "SIGRTMIN+9",
+        "SIGRTMIN+10",
+        "SIGRTMIN+11",
+        "SIGRTMIN+12",
+        "SIGRTMIN+13",
+        "SIGRTMIN+14",
+        "SIGRTMIN+15",
+        "SIGRTMAX-14",
+        "SIGRTMAX-13",
+        "SIGRTMAX-12",
+        "SIGRTMAX-11",
+        "SIGRTMAX-10",
+        "SIGRTMAX-9",
+        "SIGRTMAX-8",
+        "SIGRTMAX-7",
+        "SIGRTMAX-6",
+        "SIGRTMAX-5",
+        "SIGRTMAX-4",
+        "SIGRTMAX-3",
+        "SIGRTMAX-2",
+        "SIGRTMAX-1",
+        "SIGRTMAX"};
+
+    for (auto &&signum : signals)
+    {
+        cout << sig_str[signum] << ",";
+    }
+
+    cout << endl;
+}
+
 int main(int argc, char *argv[])
 {
     if (argc < 2)
@@ -97,26 +171,34 @@ int main(int argc, char *argv[])
     cout << "NameSpace Parent Group ID: " << vIntToStr(pbi.NSpgid) << endl;
     cout << "NameSpace Session ID: " << vIntToStr(pbi.NSsid) << endl;
 
-    printf("Real, effective, saved set, and filesystem UIDs: %d, %d, %d, %d\n", pbi.real_uid , pbi.effective_uid , pbi.saved_set_uid , pbi.filesystem_uid);
-    printf("Real, effective, saved set, and filesystem GIDs: %d, %d, %d, %d\n", pbi.real_gid , pbi.effective_gid , pbi.saved_set_gid , pbi.filesystem_gid);
+    printf("Real, effective, saved set, and filesystem UIDs: %d, %d, %d, %d\n", pbi.real_uid, pbi.effective_uid, pbi.saved_set_uid, pbi.filesystem_uid);
+    printf("Real, effective, saved set, and filesystem GIDs: %d, %d, %d, %d\n", pbi.real_gid, pbi.effective_gid, pbi.saved_set_gid, pbi.filesystem_gid);
 
     cout << "FDSize: " << pbi.fdsize << endl;
 
     cout << "Groups: " << vIntToStr(pbi.group_ids) << endl;
 
-    printf("VM Peak, Current, Locked, Pinned: %lu, %lu, %lu, %lu kb\n", pbi.VmPeak/1024, pbi.VmSize/1024, pbi.VmLck/1024, pbi.VmPin/1024);
-    printf("RSS Peak, Current, Anon, File, Shmem: %lu, %lu, %lu, %lu, %lu kb\n", pbi.VmHWM/1024, pbi.VmRSS/1024, pbi.RssAnon/1024, pbi.RssFile/1024, pbi.RssShmem/1024);
-    printf("Memory Segments Data, Stack, Text, Shared Libs : %lu, %lu, %lu, %lu kb\n", pbi.VmData/1024, pbi.VmStk/1024, pbi.VmExe/1024, pbi.VmLib/1024);
-    printf("Memory Page Table Entries Size : %lu kb\n", pbi.VmPTE/1024);
-    printf("Swapped Out VM Size : %lu kb\n", pbi.VmSwap/1024);
-    printf("HugeTLB Size : %lu kb\n", pbi.HugeTLBPages/1024);
+    printf("VM Peak, Current, Locked, Pinned: %lu, %lu, %lu, %lu kb\n", pbi.VmPeak / 1024, pbi.VmSize / 1024, pbi.VmLck / 1024, pbi.VmPin / 1024);
+    printf("RSS Peak, Current, Anon, File, Shmem: %lu, %lu, %lu, %lu, %lu kb\n", pbi.VmHWM / 1024, pbi.VmRSS / 1024, pbi.RssAnon / 1024, pbi.RssFile / 1024, pbi.RssShmem / 1024);
+    printf("Memory Segments Data, Stack, Text, Shared Libs : %lu, %lu, %lu, %lu kb\n", pbi.VmData / 1024, pbi.VmStk / 1024, pbi.VmExe / 1024, pbi.VmLib / 1024);
+    printf("Memory Page Table Entries Size : %lu kb\n", pbi.VmPTE / 1024);
+    printf("Swapped Out VM Size : %lu kb\n", pbi.VmSwap / 1024);
+    printf("HugeTLB Size : %lu kb\n", pbi.HugeTLBPages / 1024);
 
     cout << "Core Dumping? " << pbi.isCoreDumping << endl;
     cout << "Active Threads: " << pbi.threads << endl;
 
     cout << "Signals Queued: " << pbi.queued_signals << '/' << pbi.signals_limit << endl;
-    cout << "Signals Pending Thread, Process: " << pbi.SigPnd << ',' << pbi.ShdPnd << endl;
-    cout << "Signals Blocked: " << pbi.SigBlk << endl;
+    cout << "Signals Pending Thread: ";
+    print_signalsv(pbi.SigPnd);
+    cout << "Signals Pending Process: ";
+    print_signalsv(pbi.ShdPnd);
+    cout << "Signals Blocked: ";
+    print_signalsv(pbi.SigBlk);
+    cout << "Signals Ignored: ";
+    print_signalsv(pbi.SigIgn);
+    cout << "Signals Caught: ";
+    print_signalsv(pbi.SigCgt);
+
     return 0;
 }
-

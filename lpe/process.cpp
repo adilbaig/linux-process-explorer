@@ -2,6 +2,23 @@
 
 using namespace std;
 
+vector<int> _vector_of_signals(size_t bitmask)
+{
+    // Given a bitmask, get a vector of Signals
+    vector<int> sigs = {};
+
+    for (int signum = 1; signum <= _NSIG; signum++)
+    {
+        auto r = (bitmask >> (signum-1)) & 1;
+        if (r == 1)
+        {
+            sigs.push_back(signum);
+        }
+    }
+
+    return sigs;
+}
+
 string do_readlink(string &path)
 {
     char buff[PATH_MAX];
@@ -185,17 +202,17 @@ void fetch_status(ProcessBasicInfo &pbi, string &pid_str)
 
     auto toBytes = [&](string size) {
         auto pos = size.find_last_of(' ');
-        auto unit = size.substr(pos+1);
+        auto unit = size.substr(pos + 1);
 
         auto rez = stoul(size);
         size_t mul = 1;
-        if(unit == "kB")
+        if (unit == "kB")
             mul = 1024;
-        else if(unit == "mB")
+        else if (unit == "mB")
             mul = 1024 * 1024;
-        else if(unit == "gB")
+        else if (unit == "gB")
             mul = 1024 * 1024 * 1024;
-        
+
         return rez * mul;
     };
 
@@ -224,11 +241,16 @@ void fetch_status(ProcessBasicInfo &pbi, string &pid_str)
     //Signals
     auto p = args[34].find('/');
     pbi.queued_signals = stoul(args[34].substr(0, p));
-    pbi.signals_limit = stoul(args[34].substr(p+1));
+    pbi.signals_limit = stoul(args[34].substr(p + 1));
 
-    pbi.SigPnd = stoi(args[35], 0, 16);
-    pbi.ShdPnd = stoi(args[36], 0, 16);
-    pbi.SigBlk = stoi(args[37], 0, 16);
+    // Convert the following signals to string
+    pbi.SigPnd = _vector_of_signals(stoul(args[35]));
+    pbi.ShdPnd = _vector_of_signals(stoul(args[36]));
+    pbi.SigBlk = _vector_of_signals(stoul(args[37]));
+    pbi.SigIgn = _vector_of_signals(stoul(args[38]));
+    pbi.SigCgt = _vector_of_signals(stoul(args[39]));
+
+    // Capabilities
 }
 
 void fetch_limits(ProcessBasicInfo &pbi, string &pid_str)

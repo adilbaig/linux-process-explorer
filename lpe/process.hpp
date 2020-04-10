@@ -70,8 +70,7 @@ struct ProcessBasicInfo
 
     // Signals
     uint queued_signals, signals_limit;
-    uint SigPnd, ShdPnd;
-    uint SigBlk, SigIgn, SigCgt;
+    vector<int> SigPnd, ShdPnd, SigBlk, SigIgn, SigCgt;
 
     // Capabilities
     ssize_t CapInh, CapPrm, CapEff;
