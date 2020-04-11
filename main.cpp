@@ -23,6 +23,7 @@ void print_signalsv(vector<int> signals)
     }
 
     const vector<string> sig_str = {
+        "__IGNORE_PLACEHOLDER__", // Because signals start at 1, not 0
         "SIGHUP",
         "SIGINT",
         "SIGQUIT",
@@ -88,7 +89,8 @@ void print_signalsv(vector<int> signals)
 
     for (auto &&signum : signals)
     {
-        cout << sig_str[signum] << ",";
+        if (signum < sig_str.size())
+            cout << sig_str[signum] << ",";
     }
 
     cout << endl;
@@ -141,9 +143,12 @@ void print_capabilitiesv(vector<int> caps)
         "CAP_WAKE_ALARM",
         "CAP_BLOCK_SUSPEND",
         "CAP_AUDIT_READ"};
-        
+
     for (auto &&cap : caps)
-        cout << cap_str[cap] << ",";
+    {
+        if (cap < cap_str.size())
+            cout << cap_str[cap] << ",";
+    }
 
     cout << endl;
 }

@@ -1,32 +1,36 @@
 #include "process.hpp"
+#include <sstream>
 
 using namespace std;
 
-vector<int> _signals_bitmask_to_vector(size_t bitmask)
+vector<int> _signals_bitmask_to_vector(string bitmask_hex)
 {
     // Given a bitmask, get a vector of Signals
-    vector<int> ret = {};
+    long long n;
+    istringstream(bitmask_hex) >> std::hex >> n;
 
+    vector<int> ret = {};
     for (int signum = 1; signum <= _NSIG; signum++)
     {
-        auto r = (bitmask >> (signum - 1)) & 1;
+        auto r = (n >> (signum - 1)) & 1;
         if (r == 1)
-        {
             ret.push_back(signum);
-        }
     }
 
     return ret;
 }
 
-vector<int> _capabilities_bitmask_to_vector(size_t bitmask)
+vector<int> _capabilities_bitmask_to_vector(string bitmask_hex)
 {
-    // Given a bitmask, get a vector of Signals
+    // Given a bitmask, get a vector of capabilities
+    long long n;
+    istringstream(bitmask_hex) >> std::hex >> n;
+
     vector<int> ret = {};
 
     for (int capability = 0; capability <= CAP_LAST_CAP; capability++)
     {
-        auto r = (bitmask >> (capability)) & 1;
+        auto r = (n >> (capability)) & 1;
         if (r == 1)
             ret.push_back(capability);
     }
@@ -258,19 +262,18 @@ void fetch_status(ProcessBasicInfo &pbi, string &pid_str)
     pbi.queued_signals = stoul(args[34].substr(0, p));
     pbi.signals_limit = stoul(args[34].substr(p + 1));
 
-    // Convert the following signals to string
-    pbi.SigPnd = _signals_bitmask_to_vector(stoul(args[35]));
-    pbi.ShdPnd = _signals_bitmask_to_vector(stoul(args[36]));
-    pbi.SigBlk = _signals_bitmask_to_vector(stoul(args[37]));
-    pbi.SigIgn = _signals_bitmask_to_vector(stoul(args[38]));
-    pbi.SigCgt = _signals_bitmask_to_vector(stoul(args[39]));
+    pbi.SigPnd = _signals_bitmask_to_vector(args[35]);
+    pbi.ShdPnd = _signals_bitmask_to_vector(args[36]);
+    pbi.SigBlk = _signals_bitmask_to_vector(args[37]);
+    pbi.SigIgn = _signals_bitmask_to_vector(args[38]);
+    pbi.SigCgt = _signals_bitmask_to_vector(args[39]);
 
     // Capabilities
-    pbi.CapInh = _capabilities_bitmask_to_vector(stoul(args[40]));
-    pbi.CapPrm = _capabilities_bitmask_to_vector(stoul(args[41]));
-    pbi.CapEff = _capabilities_bitmask_to_vector(stoul(args[42]));
-    pbi.CapBnd = _capabilities_bitmask_to_vector(stoul(args[43]));
-    pbi.CapAmb = _capabilities_bitmask_to_vector(stoul(args[44]));
+    pbi.CapInh = _capabilities_bitmask_to_vector(args[40]);
+    pbi.CapPrm = _capabilities_bitmask_to_vector(args[41]);
+    pbi.CapEff = _capabilities_bitmask_to_vector(args[42]);
+    pbi.CapBnd = _capabilities_bitmask_to_vector(args[43]);
+    pbi.CapAmb = _capabilities_bitmask_to_vector(args[44]);
 
     // CPUs allowed
     pbi.Cpus_allowed = args[49];
