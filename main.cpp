@@ -200,5 +200,10 @@ int main(int argc, char *argv[])
     cout << "Signals Caught: ";
     print_signalsv(pbi.SigCgt);
 
+    cout << "List of CPUs Allowed (cpuset): " << pbi.Cpus_allowed << endl;
+    cout << "List of Memory Banks Allowed (cpuset): " << pbi.Mems_allowed << endl;
+
+    cout << "Context Switches (Voluntary,Involuntary): " << pbi.voluntary_ctxt_switches << "," << pbi.nonvoluntary_ctxt_switches << endl;
+
     return 0;
 }

@@ -80,12 +80,12 @@ struct ProcessBasicInfo
     int Seccomp;
     bool Speculation_Store_Bypass;
 
-    // CPU Sets
-    vector<int> Cpus_allowed;
-    vector<int> Mems_allowed;
+    // CPU & Mem alowed
+    string Cpus_allowed;
+    string Mems_allowed;
 
     // Other Stats
-    int voluntary_ctxt_switches, nonvoluntary_ctxt_switches;
+    size_t voluntary_ctxt_switches, nonvoluntary_ctxt_switches;
 };
 
 string do_readlink(string &path);

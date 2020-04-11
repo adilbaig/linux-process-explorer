@@ -251,6 +251,14 @@ void fetch_status(ProcessBasicInfo &pbi, string &pid_str)
     pbi.SigCgt = _vector_of_signals(stoul(args[39]));
 
     // Capabilities
+
+    // CPUs allowed
+    pbi.Cpus_allowed = args[49];
+    pbi.Mems_allowed = args[51];
+
+    //Context switches
+    pbi.voluntary_ctxt_switches = stoul(args[52]);
+    pbi.nonvoluntary_ctxt_switches = stoul(args[53]);
 }
 
 void fetch_limits(ProcessBasicInfo &pbi, string &pid_str)
