@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <dirent.h>
 #include <signal.h>
+#include <linux/capability.h>
 #include <sys/resource.h>
 
 using namespace std;
@@ -54,7 +55,7 @@ struct ProcessBasicInfo
     int real_uid, effective_uid, saved_set_uid, filesystem_uid;
     int real_gid, effective_gid, saved_set_gid, filesystem_gid;
     int fdsize;
-    
+
     vector<string> groups;
     vector<int> group_ids;
     vector<int> NStgid, NSpid, NSpgid, NSsid;
@@ -73,14 +74,13 @@ struct ProcessBasicInfo
     vector<int> SigPnd, ShdPnd, SigBlk, SigIgn, SigCgt;
 
     // Capabilities
-    ssize_t CapInh, CapPrm, CapEff;
-    ssize_t CapBnd;
-    ssize_t CapAmb;
+    vector<int> CapInh, CapPrm, CapEff;
+    vector<int> CapBnd, CapAmb;
     bool NoNewPrivs;
     int Seccomp;
     bool Speculation_Store_Bypass;
 
-    // CPU & Mem alowed
+    // CPU & Mem alowed (cpuset)
     string Cpus_allowed;
     string Mems_allowed;
 

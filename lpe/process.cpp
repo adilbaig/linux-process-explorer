@@ -2,21 +2,36 @@
 
 using namespace std;
 
-vector<int> _vector_of_signals(size_t bitmask)
+vector<int> _signals_bitmask_to_vector(size_t bitmask)
 {
     // Given a bitmask, get a vector of Signals
-    vector<int> sigs = {};
+    vector<int> ret = {};
 
     for (int signum = 1; signum <= _NSIG; signum++)
     {
-        auto r = (bitmask >> (signum-1)) & 1;
+        auto r = (bitmask >> (signum - 1)) & 1;
         if (r == 1)
         {
-            sigs.push_back(signum);
+            ret.push_back(signum);
         }
     }
 
-    return sigs;
+    return ret;
+}
+
+vector<int> _capabilities_bitmask_to_vector(size_t bitmask)
+{
+    // Given a bitmask, get a vector of Signals
+    vector<int> ret = {};
+
+    for (int capability = 0; capability <= CAP_LAST_CAP; capability++)
+    {
+        auto r = (bitmask >> (capability)) & 1;
+        if (r == 1)
+            ret.push_back(capability);
+    }
+
+    return ret;
 }
 
 string do_readlink(string &path)
@@ -244,13 +259,18 @@ void fetch_status(ProcessBasicInfo &pbi, string &pid_str)
     pbi.signals_limit = stoul(args[34].substr(p + 1));
 
     // Convert the following signals to string
-    pbi.SigPnd = _vector_of_signals(stoul(args[35]));
-    pbi.ShdPnd = _vector_of_signals(stoul(args[36]));
-    pbi.SigBlk = _vector_of_signals(stoul(args[37]));
-    pbi.SigIgn = _vector_of_signals(stoul(args[38]));
-    pbi.SigCgt = _vector_of_signals(stoul(args[39]));
+    pbi.SigPnd = _signals_bitmask_to_vector(stoul(args[35]));
+    pbi.ShdPnd = _signals_bitmask_to_vector(stoul(args[36]));
+    pbi.SigBlk = _signals_bitmask_to_vector(stoul(args[37]));
+    pbi.SigIgn = _signals_bitmask_to_vector(stoul(args[38]));
+    pbi.SigCgt = _signals_bitmask_to_vector(stoul(args[39]));
 
     // Capabilities
+    pbi.CapInh = _capabilities_bitmask_to_vector(stoul(args[40]));
+    pbi.CapPrm = _capabilities_bitmask_to_vector(stoul(args[41]));
+    pbi.CapEff = _capabilities_bitmask_to_vector(stoul(args[42]));
+    pbi.CapBnd = _capabilities_bitmask_to_vector(stoul(args[43]));
+    pbi.CapAmb = _capabilities_bitmask_to_vector(stoul(args[44]));
 
     // CPUs allowed
     pbi.Cpus_allowed = args[49];

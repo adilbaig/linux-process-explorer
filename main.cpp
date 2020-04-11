@@ -16,6 +16,12 @@ string vIntToStr(vector<int> vi)
 
 void print_signalsv(vector<int> signals)
 {
+    if (!signals.size())
+    {
+        cout << "-" << endl;
+        return;
+    }
+
     const vector<string> sig_str = {
         "SIGHUP",
         "SIGINT",
@@ -84,6 +90,60 @@ void print_signalsv(vector<int> signals)
     {
         cout << sig_str[signum] << ",";
     }
+
+    cout << endl;
+}
+
+void print_capabilitiesv(vector<int> caps)
+{
+    if (!caps.size())
+    {
+        cout << "-" << endl;
+        return;
+    }
+
+    const vector<string> cap_str{
+        "CAP_CHOWN",
+        "CAP_DAC_OVERRIDE",
+        "CAP_DAC_READ_SEARCH",
+        "CAP_FOWNER",
+        "CAP_FSETID",
+        "CAP_KILL",
+        "CAP_SETGID",
+        "CAP_SETUID",
+        "CAP_SETPCAP",
+        "CAP_LINUX_IMMUTABLE",
+        "CAP_NET_BIND_SERVICE",
+        "CAP_NET_BROADCAST",
+        "CAP_NET_ADMIN",
+        "CAP_NET_RAW",
+        "CAP_IPC_LOCK",
+        "CAP_IPC_OWNER",
+        "CAP_SYS_MODULE",
+        "CAP_SYS_RAWIO",
+        "CAP_SYS_CHROOT",
+        "CAP_SYS_PTRACE",
+        "CAP_SYS_PACCT",
+        "CAP_SYS_ADMIN",
+        "CAP_SYS_BOOT",
+        "CAP_SYS_NICE",
+        "CAP_SYS_RESOURCE",
+        "CAP_SYS_TIME",
+        "CAP_SYS_TTY_CONFIG",
+        "CAP_MKNOD",
+        "CAP_LEASE",
+        "CAP_AUDIT_WRITE",
+        "CAP_AUDIT_CONTROL",
+        "CAP_SETFCAP",
+        "CAP_MAC_OVERRIDE",
+        "CAP_MAC_ADMIN",
+        "CAP_SYSLOG",
+        "CAP_WAKE_ALARM",
+        "CAP_BLOCK_SUSPEND",
+        "CAP_AUDIT_READ"};
+        
+    for (auto &&cap : caps)
+        cout << cap_str[cap] << ",";
 
     cout << endl;
 }
@@ -199,6 +259,17 @@ int main(int argc, char *argv[])
     print_signalsv(pbi.SigIgn);
     cout << "Signals Caught: ";
     print_signalsv(pbi.SigCgt);
+
+    cout << "Capabilities Inheritable: ";
+    print_capabilitiesv(pbi.CapInh);
+    cout << "Capabilities Permitted: ";
+    print_capabilitiesv(pbi.CapInh);
+    cout << "Capabilities Effective: ";
+    print_capabilitiesv(pbi.CapInh);
+    cout << "Capability Bounding Set: ";
+    print_capabilitiesv(pbi.CapBnd);
+    cout << "Capability Ambient Set: ";
+    print_capabilitiesv(pbi.CapAmb);
 
     cout << "List of CPUs Allowed (cpuset): " << pbi.Cpus_allowed << endl;
     cout << "List of Memory Banks Allowed (cpuset): " << pbi.Mems_allowed << endl;
