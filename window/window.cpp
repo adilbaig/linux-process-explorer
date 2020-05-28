@@ -5,6 +5,7 @@ MainWindow::MainWindow(std::string title) : m_VBox(Gtk::ORIENTATION_VERTICAL)
   set_title("Linux Process Explorer: " + title);
   set_border_width(5);
   set_default_size(-1, -1);
+  set_icon_from_file("icon.png");
 
   add(m_VBox);
 
