@@ -1,9 +1,10 @@
 #include "window.hpp"
 
-MainWindow::MainWindow(int timeout_ms){
+MainWindow::MainWindow(int timeout_ms)
+{
   update_timeout_ms = timeout_ms;
 }
-MainWindow::~MainWindow(){}
+MainWindow::~MainWindow() {}
 
 void MainWindow::initialize(std::string title)
 {
@@ -44,9 +45,9 @@ void MainWindow::initialize(std::string title)
 
   // So, GTK's signals and slots mechanism
   // We trigger a timeout, and read the values we need from the PBI struct
-  sigc::slot<bool>timeout_slot = sigc::mem_fun(*this, &MainWindow::on_timeout);
+  sigc::slot<bool> timeout_slot = sigc::mem_fun(*this, &MainWindow::on_timeout);
   Glib::signal_timeout().connect(timeout_slot, update_timeout_ms);
- 
+
   show_all_children();
   maximize();
 }
@@ -55,7 +56,7 @@ bool MainWindow::on_timeout()
 {
   // This is the stuff we want to update at regular intervals
   fd_table.set_fds((*pbi_ptr).fds);
-  
+
   // Always return TRUE. The signal will work like a timer.
   return true;
 }
@@ -156,10 +157,26 @@ FDTable::FDTable()
 
 void FDTable::set_fds(std::map<int, std::string> vars)
 {
-  m_refTreeModel->clear();
+  // Search through existing FDs, remove stale ones and add new ones.
+  for (const auto &row : m_refTreeModel->children())
+  {
+    auto fd = row.get_value(m_col_fd);
+
+    // Found value in map? ..
+    if (vars.count(fd) > 0)
+    {
+      //  .. pop from the map if found (this fd already exists)
+      vars.erase(fd);
+    }
+    else
+    {
+      // .. pop the row if not found (this fd no longer exists)
+      m_refTreeModel->erase(row);
+    }
+  }
 
   Gtk::TreeModel::Row row;
-  for (const auto& [key, val] : vars)
+  for (const auto &[key, val] : vars)
   {
     row = *(m_refTreeModel->append());
     row[m_col_fd] = key;
@@ -262,7 +279,6 @@ void LimitsTable::set_limits(std::vector<Limit> limits)
     row[m_col_unit] = limit.unit;
   }
 }
-
 
 TimerTable::TimerTable()
 {
