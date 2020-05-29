@@ -43,7 +43,7 @@ protected:
 
 public:
   FDTable();
-  void set_vector(std::vector<std::string>);
+  void set_fds(std::map<int, std::string>);
 };
 
 class MountPointTable
@@ -118,13 +118,18 @@ public:
   MountPointTable mountpoint_table;
   LimitsTable lm_table;
   TimerTable tm_table;
+  ProcessBasicInfo* pbi_ptr;
+  int update_timeout_ms;
 
-  MainWindow(std::string);
+  MainWindow(int);
+  void initialize(std::string);
   virtual ~MainWindow();
   void set_exe(std::string);
   void set_args(std::vector<std::string>);
   void set_cwd(std::string);
   void set_root(std::string);
+
+  bool on_timeout();
 
 protected:
   Gtk::Box m_VBox;

@@ -1,12 +1,18 @@
 #include "window.hpp"
 
-MainWindow::MainWindow(std::string title) : m_VBox(Gtk::ORIENTATION_VERTICAL)
+MainWindow::MainWindow(int timeout_ms){
+  update_timeout_ms = timeout_ms;
+}
+MainWindow::~MainWindow(){}
+
+void MainWindow::initialize(std::string title)
 {
   set_title("Linux Process Explorer: " + title);
   set_border_width(5);
   set_default_size(-1, -1);
   set_icon_from_file("icon.png");
 
+  m_VBox = Gtk::Box(Gtk::ORIENTATION_VERTICAL);
   add(m_VBox);
 
   // Add the ScrolledWindow to the Notebook, with the button underneath:
@@ -36,12 +42,22 @@ MainWindow::MainWindow(std::string title) : m_VBox(Gtk::ORIENTATION_VERTICAL)
   m_VBox.pack_start(m_Grid, Gtk::PACK_SHRINK);
   m_VBox.pack_start(m_Notebook);
 
+  // So, GTK's signals and slots mechanism
+  // We trigger a timeout, and read the values we need from the PBI struct
+  sigc::slot<bool>timeout_slot = sigc::mem_fun(*this, &MainWindow::on_timeout);
+  Glib::signal_timeout().connect(timeout_slot, update_timeout_ms);
+ 
   show_all_children();
   maximize();
 }
 
-MainWindow::~MainWindow()
+bool MainWindow::on_timeout()
 {
+  // This is the stuff we want to update at regular intervals
+  fd_table.set_fds((*pbi_ptr).fds);
+  
+  // Always return TRUE. The signal will work like a timer.
+  return true;
 }
 
 void MainWindow::set_exe(std::string var)
@@ -138,13 +154,15 @@ FDTable::FDTable()
   m_TreeView.get_column(s++)->set_sort_column(m_col_path);
 }
 
-void FDTable::set_vector(std::vector<std::string> vars)
+void FDTable::set_fds(std::map<int, std::string> vars)
 {
+  m_refTreeModel->clear();
+
   Gtk::TreeModel::Row row;
-  for (auto const &val : vars)
+  for (const auto& [key, val] : vars)
   {
     row = *(m_refTreeModel->append());
-    row[m_col_fd] = col_ctr++;
+    row[m_col_fd] = key;
     row[m_col_path] = val;
   }
 }

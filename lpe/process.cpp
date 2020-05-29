@@ -122,7 +122,8 @@ void fetch_open_fds(ProcessBasicInfo &pbi, string &pid_str)
             {
                 buff[len] = '\0';
                 string s = buff;
-                pbi.fds.push_back(s);
+                int fd = atoi(ent->d_name);
+                pbi.fds[fd] = s;
             }
         }
         closedir(dir);

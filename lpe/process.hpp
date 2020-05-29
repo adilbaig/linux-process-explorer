@@ -42,7 +42,7 @@ struct ProcessBasicInfo
     string root;
 
     vector<string> mountpoints;
-    vector<string> fds;
+    map<int, string> fds;
     map<string, string> environment;
 
     vector<Limit> limits;
