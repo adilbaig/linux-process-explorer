@@ -1,6 +1,7 @@
 #include "window/window.hpp"
 #include <thread>
 #include <chrono>
+#include <string>
 
 ProcessBasicInfo pbi = {};
 // This declaration compiles, but app fails on startup with:
@@ -19,6 +20,14 @@ void bg_fetch(string pid_str)
     fetch_open_fds(pbi, pid_str);
     this_thread::sleep_for(chrono::milliseconds(thread_timer_ms));
   }
+}
+
+string vIntToStr(vector<int> vi)
+{
+    stringstream joinedValues;
+    for (const auto &v : vi)
+        joinedValues << v << ",";
+    return joinedValues.str().substr(0, joinedValues.str().size() - 1);
 }
 
 int main(int argc, char *argv[])
@@ -51,9 +60,9 @@ int main(int argc, char *argv[])
   pbi.root = do_readlink(myroot);
 
   fetch_name_and_args(pbi, pid_str);
+  fetch_status(pbi, pid_str);
   fetch_visible_mountpoints(pbi, pid_str);
   fetch_environ(pbi, pid_str);
-  // fetch_open_fds(pbi, pid_str);
   fetch_limits(pbi, pid_str);
   fetch_timers(pbi, pid_str);
 
@@ -71,14 +80,34 @@ int main(int argc, char *argv[])
 
   window.env_table.set_env_variables(pbi.environment);
   window.mountpoint_table.set_mount_points(pbi.mountpoints);
-  // window.fd_table.set_fds(pbi.fds);
   window.lm_table.set_limits(pbi.limits);
   window.tm_table.set_timers(pbi.timers);
+
+  // Put all Process Ids (Group, Thread, User etc.) in one map
+  map<string, string> ids;
+  ids.emplace("PID", to_string(pbi.pid));
+  ids.emplace("Parent PID", to_string(pbi.ppid));
+  ids.emplace("Thread Group ID", to_string(pbi.tgid));
+  ids.emplace("Numa Group ID", to_string(pbi.ngid));
+  ids.emplace("Tracer PID", to_string(pbi.tracer_pid));
+  ids.emplace("NameSpace Thread Group ID", vIntToStr(pbi.NStgid));
+  ids.emplace("NameSpace PID", vIntToStr(pbi.NSpid));
+  ids.emplace("NameSpace Parent Group ID", vIntToStr(pbi.NSpgid));
+  ids.emplace("NameSpace Session ID", vIntToStr(pbi.NSsid));
+  ids.emplace("Real UID", to_string(pbi.real_uid));
+  ids.emplace("Effective UID", to_string(pbi.effective_uid));
+  ids.emplace("Saved Set UID", to_string(pbi.saved_set_uid));
+  ids.emplace("FileSystem UID", to_string(pbi.filesystem_uid));
+  ids.emplace("Real GID", to_string(pbi.real_gid));
+  ids.emplace("Effective GID", to_string(pbi.effective_gid));
+  ids.emplace("Saved Set GID", to_string(pbi.saved_set_gid));
+  ids.emplace("FileSystem GID", to_string(pbi.filesystem_gid));
+
+  window.id_table.set_ids(ids);
 
   // Start a background thread
   // This updates the `ProcessBasicInfo` struct with new information
   thread t1(bg_fetch, pid_str);
-  // t1 = thread;
   t1.detach();
 
   return app->run(window);

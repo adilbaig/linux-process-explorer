@@ -18,6 +18,7 @@ void MainWindow::initialize(std::string title)
 
   // Add the ScrolledWindow to the Notebook, with the button underneath:
   m_Notebook.set_border_width(10);
+  m_Notebook.append_page(id_table.m_ScrolledWindow, "Process IDs");
   m_Notebook.append_page(env_table.m_ScrolledWindow, "Environment");
   m_Notebook.append_page(mountpoint_table.m_ScrolledWindow, "Visible MountPoints");
   m_Notebook.append_page(fd_table.m_ScrolledWindow, "File Descriptors");
@@ -311,5 +312,39 @@ void TimerTable::set_timers(std::vector<TimerSignal> timers)
     row[m_col_notice] = timer.notification;
     row[m_col_method] = timer.method;
     row[m_col_clock] = timer.clock;
+  }
+}
+
+IDTable::IDTable()
+{
+  m_ScrolledWindow.add(m_TreeView);
+  m_ScrolledWindow.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+
+  // Add columns to column group
+  m_Columns.add(m_col_name);
+  m_Columns.add(m_col_value);
+
+  //Create the Tree model:
+  m_refTreeModel = Gtk::ListStore::create(m_Columns);
+  m_TreeView.set_model(m_refTreeModel);
+
+  //Add the TreeView's view columns:
+  m_TreeView.append_column("Type", m_col_name);
+  m_TreeView.append_column("PID", m_col_value);
+
+  //Make the columns sortable
+  int s = 0;
+  m_TreeView.get_column(s++)->set_sort_column(m_col_name);
+  m_TreeView.get_column(s++)->set_sort_column(m_col_value);
+}
+
+void IDTable::set_ids(std::map<std::string, std::string> vars)
+{
+  Gtk::TreeModel::Row row;
+  for (auto const &[key, val] : vars)
+  {
+    row = *(m_refTreeModel->append());
+    row[m_col_name] = key;
+    row[m_col_value] = val;
   }
 }

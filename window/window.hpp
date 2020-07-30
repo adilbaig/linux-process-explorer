@@ -7,6 +7,26 @@
 #include <iostream>
 #include "../lpe/process.hpp"
 
+class IDTable
+{
+public:
+  Gtk::ScrolledWindow m_ScrolledWindow;
+  Glib::RefPtr<Gtk::ListStore> m_refTreeModel;
+
+protected:
+  int col_ctr = 0;
+  Gtk::TreeModelColumn<unsigned int> m_col_id;
+  Gtk::TreeModelColumn<Glib::ustring> m_col_name;
+  Gtk::TreeModelColumn<Glib::ustring> m_col_value;
+
+  Gtk::TreeView m_TreeView;
+  Gtk::TreeModel::ColumnRecord m_Columns;
+
+public:
+  IDTable();
+  void set_ids(std::map<std::string, std::string>);
+};
+
 class EnvTable
 {
 public:
@@ -113,6 +133,7 @@ public:
 class MainWindow : public Gtk::Window
 {
 public:
+  IDTable id_table;
   EnvTable env_table;
   FDTable fd_table;
   MountPointTable mountpoint_table;
