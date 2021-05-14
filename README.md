@@ -4,5 +4,5 @@ Linux Process Explorer is a GUI and CLI utility to display runtime information a
 ## Build Instructions
 ```
 make gui
-./bin/app $$
+./bin/lpe-gui $$
 ```

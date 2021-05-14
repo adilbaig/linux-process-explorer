@@ -1,11 +1,16 @@
-BUILD_PARAMS = -std=c++17 lpe/*
+BUILD_PARAMS = -std=c++17 src/lpe/* src/nlohmann/*
 GUI_BUILD_PARAMS = `pkg-config gtkmm-3.0 --cflags --libs`
 
 build:
-	g++ main.cpp ${BUILD_PARAMS} -obin/main
+	g++ src/main.cpp ${BUILD_PARAMS} -obin/lpe
+
+app: build
 
 debug-build:
-	g++ main.cpp ${BUILD_PARAMS} -DDEBUG -g -obin/debug
+	g++ src/main.cpp ${BUILD_PARAMS} -DDEBUG -g -obin/lpe-debug
 
 gui:
-	g++ main-app.cpp ${BUILD_PARAMS} window/* ${GUI_BUILD_PARAMS} -obin/app
+	g++ src/main-app.cpp ${BUILD_PARAMS} src/window/* ${GUI_BUILD_PARAMS} -obin/lpe-gui
+
+start-webserver:
+	python3 -m http.server --bind=localhost --directory=web

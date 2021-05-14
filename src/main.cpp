@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include "lpe/process.hpp"
+#include "nlohmann/json-v3.9.1.hpp"
 
 using namespace std;
 
@@ -153,6 +154,22 @@ void print_capabilitiesv(vector<int> caps)
     cout << endl;
 }
 
+void print_json(ProcessBasicInfo &pbi)
+{
+    // https://github.com/nlohmann/json#examples
+    nlohmann::json j;
+
+    j["exe"] = pbi.name;
+    j["cwd"] = pbi.cwd;
+    j["env"] = pbi.environment;
+    
+    cout << j.dump(4) << endl;
+
+    // Save it to a file.
+    std::ofstream o("pretty.json");
+    o << j.dump(4) << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
     if (argc < 2)
@@ -210,9 +227,9 @@ int main(int argc, char *argv[])
     cout << endl;
 
     cout << "Open FDs: " << endl;
-    for (auto &arg : pbi.fds)
+    for (auto const &[key, val] : pbi.fds)
     {
-        cout << arg << endl;
+        cout << key << ") " << val << endl;
     }
 
     cout << "Environment Variables: " << endl;
@@ -280,6 +297,8 @@ int main(int argc, char *argv[])
     cout << "List of Memory Banks Allowed (cpuset): " << pbi.Mems_allowed << endl;
 
     cout << "Context Switches (Voluntary,Involuntary): " << pbi.voluntary_ctxt_switches << "," << pbi.nonvoluntary_ctxt_switches << endl;
+
+    print_json(pbi);
 
     return 0;
 }

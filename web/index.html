@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Linux Process Explorer</title>
+  <!-- development version, includes helpful console warnings -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+</head>
+
+<body>
+  <div id="vue">
+    <h1>Process: {{exe}}</h1>
+    <p><b>CWD:</b> {{cwd}}</p>
+    <ol>
+      <li v-for="(val, key) in env">
+        <strong>{{key}}</strong>: {{ val }}
+      </li>
+    </ol>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+
+</html>
