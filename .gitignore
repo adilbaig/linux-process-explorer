@@ -1,4 +1,5 @@
 bin/*
+web/*.json
 .vscode/*
 
 #Custom fiels to ignore

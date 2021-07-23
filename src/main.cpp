@@ -2,10 +2,26 @@
 #include <cstring>
 #include <unistd.h>
 #include <dirent.h>
-#include "lpe/process.hpp"
-#include "nlohmann/json-v3.9.1.hpp"
+#include <thread>
+#include <chrono>
+// #include "lpe/process.hpp"
+#include "window/window.hpp"
+#include "ext/nlohmann/json-v3.9.1.hpp"
+#include "ext/cxxopts.hpp"
 
 using namespace std;
+
+ProcessBasicInfo pbi = {};
+// This declaration compiles, but app fails on startup with:
+// _gtk_style_provider_private_get_settings: assertion 'GTK_IS_STYLE_PROVIDER_PRIVATE (provider)' failed
+// MainWindow window;
+
+// Setting a ptr works for a start. But when i 'interact' with the table, the next update segfaults.
+// I printed the addresses, they hadn't changed. So maybe the internal reference to the window had moved.
+// MainWindow* window_ptr;
+const int thread_timer_ms = 2000;
+const string START_WEBSERVER = "python3 -m http.server --bind=localhost --directory=web &";
+const string LAUNCH_BROWSER = "xdg-open http://127.0.0.1:8000/";
 
 string vIntToStr(vector<int> vi)
 {
@@ -154,7 +170,16 @@ void print_capabilitiesv(vector<int> caps)
     cout << endl;
 }
 
-void print_json(ProcessBasicInfo &pbi)
+void bg_fetch(string pid_str)
+{
+    while (true)
+    {
+        fetch_open_fds(pbi, pid_str);
+        this_thread::sleep_for(chrono::milliseconds(thread_timer_ms));
+    }
+}
+
+void write_json(ProcessBasicInfo &pbi)
 {
     // https://github.com/nlohmann/json#examples
     nlohmann::json j;
@@ -162,51 +187,14 @@ void print_json(ProcessBasicInfo &pbi)
     j["exe"] = pbi.name;
     j["cwd"] = pbi.cwd;
     j["env"] = pbi.environment;
-    
-    cout << j.dump(4) << endl;
 
     // Save it to a file.
-    std::ofstream o("pretty.json");
+    std::ofstream o("web/response.json");
     o << j.dump(4) << std::endl;
 }
 
-int main(int argc, char *argv[])
+void write_console(ProcessBasicInfo &pbi)
 {
-    if (argc < 2)
-    {
-        cout << "USAGE: " << argv[0] << " PID" << endl;
-        return 1;
-    }
-
-    auto pid_str = string(argv[1]);
-    int pid = stoi(pid_str);
-    if (pid <= 0)
-    {
-        return -1;
-    }
-
-    // https://stackoverflow.com/questions/9152979/check-if-process-exists-given-its-pid
-    if (getpgid(pid) < 0)
-    {
-        cerr << "PID is not valid" << '\n';
-    }
-
-    ProcessBasicInfo pbi = {};
-
-    fetch_name_and_args(pbi, pid_str);
-
-    auto exe = "/proc/" + pid_str + "/exe";
-    auto cwd = "/proc/" + pid_str + "/cwd";
-    auto myroot = "/proc/" + pid_str + "/root";
-    pbi.exe = do_readlink(exe);
-    pbi.cwd = do_readlink(cwd);
-    pbi.root = do_readlink(myroot);
-
-    fetch_visible_mountpoints(pbi, pid_str);
-    fetch_open_fds(pbi, pid_str);
-    fetch_environ(pbi, pid_str);
-    fetch_status(pbi, pid_str);
-
     cout << "Program: " << pbi.name << endl;
     cout << "Args: ";
     for (auto &arg : pbi.args)
@@ -297,8 +285,119 @@ int main(int argc, char *argv[])
     cout << "List of Memory Banks Allowed (cpuset): " << pbi.Mems_allowed << endl;
 
     cout << "Context Switches (Voluntary,Involuntary): " << pbi.voluntary_ctxt_switches << "," << pbi.nonvoluntary_ctxt_switches << endl;
+}
 
-    print_json(pbi);
+int run_gtk(ProcessBasicInfo &pbi, std::string pid_str, char *argv[])
+{
+    int c = 0;
+    auto app = Gtk::Application::create(c, argv, "org.gtkmm.example");
+    auto title = pbi.name + " (" + pid_str + ")";
+
+    MainWindow window(thread_timer_ms);
+    window.pbi_ptr = &pbi;
+    window.initialize(title);
+    window.set_exe(pbi.exe);
+    window.set_args(pbi.args);
+    window.set_cwd(pbi.cwd);
+    window.set_root(pbi.root);
+
+    window.env_table.set_env_variables(pbi.environment);
+    window.mountpoint_table.set_mount_points(pbi.mountpoints);
+    window.lm_table.set_limits(pbi.limits);
+    window.tm_table.set_timers(pbi.timers);
+
+    // Put all Process Ids (Group, Thread, User etc.) in one map
+    map<string, string> ids;
+    ids.emplace("PID", to_string(pbi.pid));
+    ids.emplace("Parent PID", to_string(pbi.ppid));
+    ids.emplace("Thread Group ID", to_string(pbi.tgid));
+    ids.emplace("Numa Group ID", to_string(pbi.ngid));
+    ids.emplace("Tracer PID", to_string(pbi.tracer_pid));
+    ids.emplace("NameSpace Thread Group ID", vIntToStr(pbi.NStgid));
+    ids.emplace("NameSpace PID", vIntToStr(pbi.NSpid));
+    ids.emplace("NameSpace Parent Group ID", vIntToStr(pbi.NSpgid));
+    ids.emplace("NameSpace Session ID", vIntToStr(pbi.NSsid));
+    ids.emplace("Real UID", to_string(pbi.real_uid));
+    ids.emplace("Effective UID", to_string(pbi.effective_uid));
+    ids.emplace("Saved Set UID", to_string(pbi.saved_set_uid));
+    ids.emplace("FileSystem UID", to_string(pbi.filesystem_uid));
+    ids.emplace("Real GID", to_string(pbi.real_gid));
+    ids.emplace("Effective GID", to_string(pbi.effective_gid));
+    ids.emplace("Saved Set GID", to_string(pbi.saved_set_gid));
+    ids.emplace("FileSystem GID", to_string(pbi.filesystem_gid));
+
+    window.id_table.set_ids(ids);
+
+    // Start a background thread
+    // This updates the `ProcessBasicInfo` struct with new information
+    thread t1(bg_fetch, pid_str);
+    t1.detach();
+
+    return app->run(window);
+}
+
+int main(int argc, char *argv[])
+{
+    cxxopts::Options options("Linux Process Explorer", "A tool to review Linux process internal data as exposed by procfs");
+
+    options.add_options()
+    ("w,web", "Open in browser", cxxopts::value<bool>()->default_value("false"))
+    ("g,gui", "Open in GTK", cxxopts::value<bool>()->default_value("false"))
+    ("h,help", "Print usage");
+
+    auto result = options.parse(argc, argv);
+
+    if (result.count("help") || argc < 2)
+    {
+        cout << "USAGE: " << argv[0] << " PID" << endl;
+        cout << options.help() << endl;
+        exit(0);
+    }
+
+    bool web = result["web"].as<bool>();
+    bool gui = result["gui"].as<bool>();
+
+    auto pid_str = string(argv[1]);
+    int pid = stoi(pid_str);
+
+    // https://stackoverflow.com/questions/9152979/check-if-process-exists-given-its-pid
+    if (getpgid(pid) < 0)
+    {
+        cerr << "PID is not valid" << '\n';
+        return 1;
+    }
+
+    ProcessBasicInfo pbi = {};
+
+    fetch_name_and_args(pbi, pid_str);
+
+    auto exe = "/proc/" + pid_str + "/exe";
+    auto cwd = "/proc/" + pid_str + "/cwd";
+    auto myroot = "/proc/" + pid_str + "/root";
+    pbi.exe = do_readlink(exe);
+    pbi.cwd = do_readlink(cwd);
+    pbi.root = do_readlink(myroot);
+
+    fetch_visible_mountpoints(pbi, pid_str);
+    fetch_open_fds(pbi, pid_str);
+    fetch_environ(pbi, pid_str);
+    fetch_status(pbi, pid_str);
+
+    if (web)
+    {
+        write_json(pbi);
+
+        system(START_WEBSERVER.c_str());
+        system(LAUNCH_BROWSER.c_str());
+    }
+    else if (gui)
+    {
+        return run_gtk(pbi, pid_str, argv);
+    }
+    else
+    {
+        write_console(pbi);
+    }
 
     return 0;
 }
