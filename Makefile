@@ -7,5 +7,8 @@ build:
 debug-build:
 	g++ main.cpp ${BUILD_PARAMS} -DDEBUG -g -obin/debug
 
-gui:
+gui: | bin
 	g++ main-app.cpp ${BUILD_PARAMS} window/* ${GUI_BUILD_PARAMS} -obin/app
+
+bin:
+	mkdir -p $@
